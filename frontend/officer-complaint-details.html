@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Complaint – CityCare Officer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="officer-dashboard.html" class="active"><span class="nav-icon">👮</span> Officer Console</a>
+        <a href="profile.html"><span class="nav-icon">👤</span> Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" style="background: var(--info-light); color: var(--info);">O</div>
+          <div class="user-info">
+            <div class="user-name">Officer</div>
+            <div class="user-role">Municipal Officer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title" id="page-title">Manage Incident</h1>
+        <div class="top-header-actions">
+          <a href="officer-dashboard.html" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+        </div>
+      </header>
+
+      <div class="page-content" id="detail-container">
+        <div class="loading-state">
+          <div class="spinner lg"></div>
+          <p>Loading complaint details...</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/complaints.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!App.requireAuth(['OFFICER', 'ADMIN'])) return;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const complaintId = urlParams.get('id');
+
+      if (!complaintId) {
+        document.getElementById('detail-container').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Complaint Not Found</h3>
+            <p>No complaint ID was provided.</p>
+            <a href="officer-dashboard.html" class="btn btn-primary mt-4">Return to Officer Dashboard</a>
+          </div>
+        `;
+        return;
+      }
+
+      const complaint = await Dashboard.loadComplaintDetail(complaintId);
+      if (!complaint) {
+        document.getElementById('detail-container').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">⚠️</div>
+            <h3>Unable to Load Complaint</h3>
+            <p>Could not fetch details for complaint #${App.escapeHtml(complaintId)}.</p>
+            <a href="officer-dashboard.html" class="btn btn-primary mt-4">Return to Officer Dashboard</a>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('page-title').textContent = `Manage #${complaint.complaintId || complaint.id}`;
+
+      const timelineHtml = Complaints.renderTimeline(complaint.status, complaint.updates || []);
+      const deptName = complaint.department ? complaint.department.name : (complaint.departmentName || 'General Civic');
+      const citizenName = complaint.user ? complaint.user.name : (complaint.userName || 'Citizen');
+      const citizenPhone = complaint.user ? complaint.user.phone : (complaint.userPhone || '—');
+
+      document.getElementById('detail-container').innerHTML = `
+        <div class="grid-2">
+          <!-- Left Column: Details, Status Update & Resolution Proof -->
+          <div>
+            <!-- Issue Overview -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h3>Incident Details</h3>
+                <div class="flex gap-2">
+                  <span class="badge ${App.statusBadge(complaint.status)}">${App.statusLabel(complaint.status)}</span>
+                  <span class="badge ${App.priorityBadge(complaint.priority)}">${complaint.priority}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                ${complaint.imageUrl ? `
+                  <div style="margin-bottom: var(--space-5); text-align: center;">
+                    <img src="${complaint.imageUrl}" alt="Issue Photo" style="max-height: 280px; width: 100%; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--gray-200);">
+                  </div>
+                ` : ''}
+
+                <div class="detail-section">
+                  <h4>Description</h4>
+                  <p class="text-small" style="margin-top: var(--space-2); color: var(--gray-700); line-height: 1.6;">
+                    ${App.escapeHtml(complaint.description || 'No description provided.')}
+                  </p>
+                </div>
+
+                <dl class="detail-grid mt-4">
+                  <dt>Category</dt>
+                  <dd><strong>${App.categoryLabel(complaint.category)}</strong></dd>
+
+                  <dt>Reported By</dt>
+                  <dd>${App.escapeHtml(citizenName)} (${App.escapeHtml(citizenPhone)})</dd>
+
+                  <dt>Department</dt>
+                  <dd>${App.escapeHtml(deptName)}</dd>
+
+                  <dt>Reported On</dt>
+                  <dd>${App.formatDateTime(complaint.createdAt)}</dd>
+
+                  <dt>GPS Coordinates</dt>
+                  <dd>${complaint.latitude ? `${complaint.latitude.toFixed(5)}, ${complaint.longitude.toFixed(5)}` : 'N/A'}</dd>
+                </dl>
+              </div>
+            </div>
+
+            <!-- Resolution Action Form -->
+            <div class="card mb-6">
+              <div class="card-header">
+                <h3>Update Status & Resolution</h3>
+              </div>
+              <div class="card-body">
+                <form id="officer-action-form" novalidate>
+                  <div class="form-group">
+                    <label class="form-label" for="update-status">Target Status *</label>
+                    <select id="update-status" class="form-control" required>
+                      <option value="ASSIGNED" ${complaint.status === 'ASSIGNED' ? 'selected' : ''}>Assigned</option>
+                      <option value="IN_PROGRESS" ${complaint.status === 'IN_PROGRESS' ? 'selected' : ''}>In Progress</option>
+                      <option value="RESOLVED" ${complaint.status === 'RESOLVED' ? 'selected' : ''}>Resolved (Requires Proof Photo)</option>
+                      <option value="CLOSED" ${complaint.status === 'CLOSED' ? 'selected' : ''}>Closed</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="officer-remarks">Remarks / Work Description *</label>
+                    <textarea id="officer-remarks" class="form-control" placeholder="Detail the steps taken, contractor notes, or resolution summary..." rows="3" required></textarea>
+                    <div class="form-error" id="remarks-error"></div>
+                  </div>
+
+                  <div class="form-group" id="proof-upload-section">
+                    <label class="form-label">Resolution Proof Photo (After Repair)</label>
+                    <div class="image-upload-area" id="proof-upload-area" style="padding: var(--space-5);">
+                      <div class="upload-icon">📷</div>
+                      <div class="upload-text"><strong>Upload resolution photo</strong> to verify completion</div>
+                      <input type="file" id="proof-input" accept="image/jpeg,image/png,image/webp" style="display:none">
+                    </div>
+                    <div id="proof-preview-container" class="hidden mt-2" style="position: relative;">
+                      <img id="proof-preview" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: var(--radius-md); border: 1px solid var(--gray-300);" alt="Resolution Proof Preview">
+                      <button type="button" class="remove-image" id="btn-remove-proof">&times;</button>
+                    </div>
+                    <div class="form-error" id="proof-error"></div>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-save-action">
+                    Apply Status Update
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Location Map & Timeline History -->
+          <div>
+            <div class="card mb-6">
+              <div class="card-header">
+                <h3>Incident Location</h3>
+                <span class="text-xs text-muted">Field Navigation</span>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div class="map-container" id="officer-detail-map" style="border:none; border-radius: 0 0 var(--radius-lg) var(--radius-lg); height: 320px;"></div>
+              </div>
+              ${complaint.latitude ? `
+                <div class="card-footer text-center">
+                  <a href="https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}" target="_blank" rel="noopener" class="btn btn-outline btn-sm">
+                    🧭 Open in Google Maps Navigation
+                  </a>
+                </div>
+              ` : ''}
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Resolution Audit Timeline</h3>
+              </div>
+              <div class="card-body">
+                <div class="timeline">
+                  ${timelineHtml}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Init Map
+      if (complaint.latitude && complaint.longitude) {
+        setTimeout(() => {
+          MapModule.initMap('officer-detail-map', {
+            center: [complaint.latitude, complaint.longitude],
+            zoom: 16
+          });
+          MapModule.setMarker(complaint.latitude, complaint.longitude, `
+            <strong>#${complaint.complaintId || complaint.id}</strong><br>
+            ${App.categoryLabel(complaint.category)}
+          `);
+        }, 150);
+      }
+
+      // Proof photo handlers
+      let selectedProofFile = null;
+      const proofArea = document.getElementById('proof-upload-area');
+      const proofInput = document.getElementById('proof-input');
+      const proofPreviewContainer = document.getElementById('proof-preview-container');
+      const proofPreview = document.getElementById('proof-preview');
+      const removeProofBtn = document.getElementById('btn-remove-proof');
+
+      proofArea.addEventListener('click', () => proofInput.click());
+      proofInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+          const file = e.target.files[0];
+          const err = App.validateImage(file);
+          if (err) {
+            App.Toast.error(err);
+            return;
+          }
+          selectedProofFile = file;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            proofPreview.src = ev.target.result;
+            proofPreviewContainer.classList.remove('hidden');
+            proofArea.classList.add('hidden');
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      removeProofBtn.addEventListener('click', () => {
+        selectedProofFile = null;
+        proofPreview.src = '';
+        proofPreviewContainer.classList.add('hidden');
+        proofArea.classList.remove('hidden');
+        proofInput.value = '';
+      });
+
+      // Submit Form
+      document.getElementById('officer-action-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const targetStatus = document.getElementById('update-status').value;
+        const remarks = document.getElementById('officer-remarks').value.trim();
+        const remarksError = document.getElementById('remarks-error');
+        const proofError = document.getElementById('proof-error');
+
+        remarksError.classList.remove('visible');
+        proofError.classList.remove('visible');
+
+        if (!remarks) {
+          remarksError.textContent = 'Please enter remarks explaining the update.';
+          remarksError.classList.add('visible');
+          return;
+        }
+
+        if (targetStatus === 'RESOLVED' && !selectedProofFile && !complaint.resolutionProofUrl) {
+          proofError.textContent = 'A resolution proof photo is required to mark an issue as Resolved.';
+          proofError.classList.add('visible');
+          return;
+        }
+
+        const saveBtn = document.getElementById('btn-save-action');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<div class="spinner"></div> Updating...';
+
+        try {
+          // 1. If proof file is selected, upload resolution proof
+          if (selectedProofFile) {
+            const formData = new FormData();
+            formData.append('proof', selectedProofFile);
+            formData.append('remarks', remarks);
+            await Complaints.uploadResolutionProof(complaint.id, formData);
+          }
+
+          // 2. Update status & remarks
+          await Complaints.updateStatus(complaint.id, targetStatus, remarks);
+
+          App.Toast.success('Incident status updated successfully.');
+          setTimeout(() => window.location.reload(), 1200);
+
+        } catch (err) {
+          App.Toast.error(err.message || 'Failed to update complaint.');
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Apply Status Update';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

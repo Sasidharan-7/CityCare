@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications – CityCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="citizen-dashboard.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="report-issue.html" id="nav-report"><span class="nav-icon">📝</span> Report Issue</a>
+        <a href="complaints.html" id="nav-complaints"><span class="nav-icon">📋</span> My Complaints</a>
+        <a href="notifications.html" class="active"><span class="nav-icon">🔔</span> Notifications</a>
+        <a href="profile.html"><span class="nav-icon">👤</span> Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">U</div>
+          <div class="user-info">
+            <div class="user-name">User</div>
+            <div class="user-role">Citizen</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title">Notifications</h1>
+        <div class="top-header-actions">
+          <button class="btn btn-outline btn-sm" onclick="Dashboard.loadNotifications()">↻ Refresh</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Recent Updates</h3>
+            <span class="text-xs text-muted">Click a notification to mark as read</span>
+          </div>
+          <div id="notifications-list">
+            <div class="loading-state">
+              <div class="spinner lg"></div>
+              <p>Fetching notifications...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/complaints.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!App.requireAuth()) return;
+
+      const user = App.getUser();
+      // Adjust dashboard link according to role
+      if (user && user.role === 'OFFICER') {
+        const d = document.getElementById('nav-dashboard');
+        if (d) d.href = 'officer-dashboard.html';
+        const r = document.getElementById('nav-report');
+        if (r) r.style.display = 'none';
+        const c = document.getElementById('nav-complaints');
+        if (c) c.style.display = 'none';
+      } else if (user && user.role === 'ADMIN') {
+        const d = document.getElementById('nav-dashboard');
+        if (d) d.href = 'admin-dashboard.html';
+        const r = document.getElementById('nav-report');
+        if (r) r.style.display = 'none';
+        const c = document.getElementById('nav-complaints');
+        if (c) c.style.display = 'none';
+      }
+
+      Dashboard.loadNotifications();
+    });
+  </script>
+</body>
+</html>

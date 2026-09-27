@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard – CityCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="admin-dashboard.html" class="active"><span class="nav-icon">📊</span> City Analytics</a>
+        <a href="profile.html"><span class="nav-icon">👤</span> Admin Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" style="background: var(--danger-light); color: var(--danger);">A</div>
+          <div class="user-info">
+            <div class="user-name">Administrator</div>
+            <div class="user-role">System Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title">City Governance & Analytics</h1>
+        <div class="top-header-actions">
+          <button class="btn btn-outline btn-sm" onclick="window.location.reload()">↻ Refresh Data</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Key Metrics Grid -->
+        <div class="stats-grid" id="admin-stats">
+          <div class="loading-state" style="grid-column: 1/-1;">
+            <div class="spinner lg"></div>
+            <p>Gathering smart city metrics...</p>
+          </div>
+        </div>
+
+        <!-- City-wide Geo Map -->
+        <div class="card mb-6">
+          <div class="card-header">
+            <h3>City-Wide Incident Map</h3>
+            <span class="text-xs text-muted">All active & resolved civic reports</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="map-container large" id="admin-map" style="border:none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);"></div>
+          </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div class="analytics-grid">
+          <!-- By Category -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3>Issues by Category</h3>
+            </div>
+            <div class="card-body">
+              <div class="bar-chart" id="category-chart">
+                <div class="loading-state"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- By Department -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3>Department Workload</h3>
+            </div>
+            <div class="card-body">
+              <div class="bar-chart" id="department-chart">
+                <div class="loading-state"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- By Status -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3>Resolution Pipeline Status</h3>
+            </div>
+            <div class="card-body">
+              <div class="bar-chart" id="status-chart">
+                <div class="loading-state"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions / Department Directory -->
+          <div class="analytics-card">
+            <div class="card-header">
+              <h3>Department Routing Directory</h3>
+            </div>
+            <div class="card-body">
+              <ul style="font-size: var(--font-size-sm); line-height: 2;">
+                <li>🛣️ <strong>Road Department:</strong> Potholes & Road Damage</li>
+                <li>♻️ <strong>Sanitation Department:</strong> Garbage & Waste Accumulation</li>
+                <li>💧 <strong>Water Department:</strong> Water Leakages & Pipe Bursts</li>
+                <li>⚡ <strong>Electricity Department:</strong> Broken Streetlights</li>
+                <li>🏗️ <strong>Public Works (PWD):</strong> Open Drains & Manholes</li>
+                <li>🏢 <strong>General Civic:</strong> Miscellaneous Community Issues</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/complaints.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!App.requireAuth(['ADMIN'])) return;
+      Dashboard.loadAdminDashboard();
+    });
+  </script>
+</body>
+</html>

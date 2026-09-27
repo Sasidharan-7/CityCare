@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Complaints – CityCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="citizen-dashboard.html"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="report-issue.html"><span class="nav-icon">📝</span> Report Issue</a>
+        <a href="complaints.html" class="active"><span class="nav-icon">📋</span> My Complaints</a>
+        <a href="notifications.html"><span class="nav-icon">🔔</span> Notifications</a>
+        <a href="profile.html"><span class="nav-icon">👤</span> Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar">U</div>
+          <div class="user-info">
+            <div class="user-name">User</div>
+            <div class="user-role">Citizen</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title">My Complaints</h1>
+        <div class="top-header-actions">
+          <a href="report-issue.html" class="btn btn-primary btn-sm">+ Report Issue</a>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Filters Bar -->
+        <form id="filter-form" class="filters-bar" onsubmit="return false;">
+          <input type="text" class="form-control search-input" placeholder="Search by description or ID..." data-filter="search">
+          
+          <select class="form-control" data-filter="status">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="ASSIGNED">Assigned</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+
+          <select class="form-control" data-filter="category">
+            <option value="">All Categories</option>
+            <option value="POTHOLE">Pothole</option>
+            <option value="GARBAGE">Garbage</option>
+            <option value="WATER_LEAKAGE">Water Leakage</option>
+            <option value="BROKEN_STREETLIGHT">Broken Streetlight</option>
+            <option value="OPEN_DRAIN">Open Drain / Manhole</option>
+            <option value="ROAD_DAMAGE">Road Damage</option>
+            <option value="OTHER">Other</option>
+          </select>
+
+          <select class="form-control" data-filter="priority">
+            <option value="">All Priorities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+
+          <button type="button" class="btn btn-outline btn-sm" data-action="reset-filters">Reset</button>
+        </form>
+
+        <!-- Complaints List Container -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Submitted Complaints</h3>
+          </div>
+          <div id="complaints-list">
+            <div class="loading-state">
+              <div class="spinner lg"></div>
+              <p>Loading complaints...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script src="js/complaints.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!App.requireAuth(['CITIZEN'])) return;
+
+      // Initial load
+      Dashboard.loadComplaintsList();
+
+      // Initialize filter behavior
+      Dashboard.initFilters((filters) => {
+        Dashboard.loadComplaintsList(filters);
+      });
+    });
+  </script>
+</body>
+</html>

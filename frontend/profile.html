@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile – CityCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="citizen-dashboard.html" id="nav-dashboard"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="report-issue.html" id="nav-report"><span class="nav-icon">📝</span> Report Issue</a>
+        <a href="complaints.html" id="nav-complaints"><span class="nav-icon">📋</span> My Complaints</a>
+        <a href="notifications.html" id="nav-notif"><span class="nav-icon">🔔</span> Notifications</a>
+        <a href="profile.html" class="active"><span class="nav-icon">👤</span> Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" id="footer-avatar">U</div>
+          <div class="user-info">
+            <div class="user-name" id="footer-name">User</div>
+            <div class="user-role" id="footer-role">Citizen</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title">Account Profile</h1>
+        <div class="top-header-actions">
+          <button class="btn btn-danger btn-sm" data-action="logout">Sign Out</button>
+        </div>
+      </header>
+
+      <div class="page-content" style="max-width: 800px;">
+        <!-- Profile Header Card -->
+        <div class="card mb-6">
+          <div class="card-body">
+            <div class="profile-header">
+              <div class="profile-avatar" id="profile-avatar-circle">U</div>
+              <div>
+                <h2 id="profile-name" style="margin-bottom: var(--space-1);">Loading Name...</h2>
+                <div class="flex items-center gap-2" style="margin-top: var(--space-2);">
+                  <span class="badge" id="profile-role-badge" style="background: var(--primary-light); color: var(--primary);">Citizen</span>
+                  <span class="text-small text-muted" id="profile-email">email@example.com</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Info Form -->
+            <form id="profile-form" onsubmit="return false;">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="p-name">Full Name</label>
+                  <input type="text" id="p-name" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="p-email">Email Address</label>
+                  <input type="email" id="p-email" class="form-control" readonly>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label" for="p-phone">Phone Number</label>
+                  <input type="tel" id="p-phone" class="form-control" readonly>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="p-role">Account Privilege</label>
+                  <input type="text" id="p-role" class="form-control" readonly>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--gray-200); display: flex; justify-content: space-between; align-items: center;">
+                <span class="text-xs text-muted">To modify registered account details or permissions, please contact your municipal administrator.</span>
+                <button type="button" class="btn btn-outline" id="btn-back-dashboard">← Back to Console</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- System Information Card -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Platform Information</h3>
+          </div>
+          <div class="card-body">
+            <dl class="detail-grid">
+              <dt>System</dt>
+              <dd>CityCare – AI-Powered Smart City Issue Management</dd>
+              <dt>Problem Code</dt>
+              <dd>SIH25031: Crowdsourced Civic Issue Reporting & Resolution</dd>
+              <dt>Status</dt>
+              <dd><span class="badge badge-resolved">System Operational</span></dd>
+              <dt>Version</dt>
+              <dd>1.0.0 (Local Build)</dd>
+            </dl>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!App.requireAuth()) return;
+
+      const user = App.getUser() || {};
+
+      // Fill user data
+      document.getElementById('profile-name').textContent = user.name || 'User Profile';
+      document.getElementById('profile-email').textContent = user.email || '—';
+      document.getElementById('profile-avatar-circle').textContent = (user.name || 'U').charAt(0).toUpperCase();
+
+      document.getElementById('p-name').value = user.name || '';
+      document.getElementById('p-email').value = user.email || '';
+      document.getElementById('p-phone').value = user.phone || '9876543210';
+      document.getElementById('p-role').value = user.role || 'CITIZEN';
+
+      const roleBadge = document.getElementById('profile-role-badge');
+      if (roleBadge) {
+        roleBadge.textContent = user.role || 'CITIZEN';
+        if (user.role === 'OFFICER') {
+          roleBadge.style.background = 'var(--info-light)';
+          roleBadge.style.color = 'var(--info)';
+        } else if (user.role === 'ADMIN') {
+          roleBadge.style.background = 'var(--danger-light)';
+          roleBadge.style.color = 'var(--danger)';
+        }
+      }
+
+      // Configure back to dashboard button
+      let targetDashboard = 'citizen-dashboard.html';
+      if (user.role === 'OFFICER') targetDashboard = 'officer-dashboard.html';
+      if (user.role === 'ADMIN') targetDashboard = 'admin-dashboard.html';
+
+      document.getElementById('btn-back-dashboard').addEventListener('click', () => {
+        window.location.href = targetDashboard;
+      });
+
+      // Adjust navigation based on role
+      const navDash = document.getElementById('nav-dashboard');
+      if (navDash) navDash.href = targetDashboard;
+
+      if (user.role === 'OFFICER') {
+        const r = document.getElementById('nav-report');
+        if (r) r.style.display = 'none';
+        const c = document.getElementById('nav-complaints');
+        if (c) c.style.display = 'none';
+      } else if (user.role === 'ADMIN') {
+        const r = document.getElementById('nav-report');
+        if (r) r.style.display = 'none';
+        const c = document.getElementById('nav-complaints');
+        if (c) c.style.display = 'none';
+        const n = document.getElementById('nav-notif');
+        if (n) n.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

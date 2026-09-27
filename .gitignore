@@ -1,0 +1,52 @@
+# ==========================================================
+# CityCare - Git Ignore
+# ==========================================================
+
+# Python & AI Microservice
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Java & Maven
+target/
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+tools/
+
+# IDE & Editor Files
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Secrets & Environment Configurations
+.env
+.env.local
+.env.production
+application-local.properties
+
+# Uploaded Files & Temporary Assets
+uploads/*
+!uploads/.gitkeep
+ai-service/model/*.pt
+ai-service/model/*.onnx

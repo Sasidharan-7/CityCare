@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Officer Dashboard – CityCare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">City<span>Care</span></div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="officer-dashboard.html" class="active"><span class="nav-icon">👮</span> Officer Console</a>
+        <a href="profile.html"><span class="nav-icon">👤</span> Profile</a>
+        <a href="#" data-action="logout"><span class="nav-icon">🚪</span> Logout</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="user-avatar" style="background: var(--info-light); color: var(--info);">O</div>
+          <div class="user-info">
+            <div class="user-name">Officer</div>
+            <div class="user-role">Municipal Officer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div class="sidebar-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="hamburger-btn" id="hamburger-btn">☰</button>
+        <h1 class="page-title">Officer Operations Console</h1>
+        <div class="top-header-actions">
+          <button class="btn btn-outline btn-sm" onclick="window.location.reload()">↻ Refresh</button>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Officer Stats -->
+        <div class="stats-grid" id="officer-stats">
+          <div class="loading-state" style="grid-column: 1/-1;">
+            <div class="spinner lg"></div>
+            <p>Loading officer metrics...</p>
+          </div>
+        </div>
+
+        <!-- Complaints Geographic Distribution Map -->
+        <div class="card mb-6">
+          <div class="card-header">
+            <h3>Assigned Incident Locations</h3>
+            <span class="text-xs text-muted">Geographical distribution of jurisdiction issues</span>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="map-container large" id="officer-map" style="border:none; border-radius: 0 0 var(--radius-lg) var(--radius-lg);"></div>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <form id="filter-form" class="filters-bar" onsubmit="return false;">
+          <input type="text" class="form-control search-input" placeholder="Search by complaint ID or details..." data-filter="search">
+          
+          <select class="form-control" data-filter="status">
+            <option value="">All Statuses</option>
+            <option value="ASSIGNED">Assigned</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="CLOSED">Closed</option>
+          </select>
+
+          <select class="form-control" data-filter="priority">
+            <option value="">All Priorities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+
+          <button type="button" class="btn btn-outline btn-sm" data-action="reset-filters">Reset</button>
+        </form>
+
+        <!-- Complaints Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Assigned Complaints</h3>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Complaint ID</th>
+                  <th>Category</th>
+                  <th>Priority</th>
+                  <th>Reported Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="officer-table-body">
+                <tr>
+                  <td colspan="6" class="text-center" style="padding: 2rem;">
+                    <div class="spinner"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/complaints.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!App.requireAuth(['OFFICER', 'ADMIN'])) return;
+
+      // Load initial dashboard
+      Dashboard.loadOfficerDashboard();
+
+      // Hook filters
+      Dashboard.initFilters(async (filters) => {
+        try {
+          const list = await Complaints.getOfficerComplaints(filters);
+          const complaints = Array.isArray(list) ? list : (list.content || []);
+          
+          const tbody = document.getElementById('officer-table-body');
+          if (complaints.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted" style="padding: 2rem;">No matching complaints found.</td></tr>';
+          } else {
+            tbody.innerHTML = complaints.map(c => `
+              <tr>
+                <td><strong>#${c.complaintId || c.id}</strong></td>
+                <td>${App.categoryLabel(c.category)}</td>
+                <td><span class="badge ${App.priorityBadge(c.priority)}">${c.priority}</span></td>
+                <td>${App.formatDate(c.createdAt)}</td>
+                <td><span class="badge ${App.statusBadge(c.status)}">${App.statusLabel(c.status)}</span></td>
+                <td>
+                  <a href="officer-complaint-details.html?id=${c.id}" class="btn btn-sm btn-primary">Manage</a>
+                </td>
+              </tr>
+            `).join('');
+          }
+
+          // Update map
+          MapModule.addComplaintMarkers(complaints);
+        } catch (err) {
+          App.Toast.error(err.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

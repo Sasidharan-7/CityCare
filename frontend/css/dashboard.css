@@ -1,0 +1,234 @@
+/* ============================================
+   CityCare - Dashboard-Specific Styles
+   ============================================ */
+
+/* --- Officer complaint table enhancements --- */
+.officer-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+/* --- Admin analytics section --- */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+.analytics-card {
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.analytics-card .card-header {
+  padding: var(--space-4) var(--space-5);
+}
+
+.analytics-card .card-body {
+  padding: var(--space-4) var(--space-5);
+}
+
+/* --- Simple Bar Chart (CSS-only for lightweight analytics) --- */
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.bar-chart-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.bar-chart-item .bar-label {
+  width: 120px;
+  font-size: var(--font-size-xs);
+  color: var(--gray-600);
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.bar-chart-item .bar-track {
+  flex: 1;
+  height: 24px;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.bar-chart-item .bar-fill {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--white);
+  font-weight: 600;
+  min-width: fit-content;
+  transition: width 0.5s ease;
+}
+
+.bar-fill.blue { background: var(--primary); }
+.bar-fill.green { background: var(--success); }
+.bar-fill.yellow { background: var(--warning); }
+.bar-fill.red { background: var(--danger); }
+.bar-fill.cyan { background: var(--info); }
+.bar-fill.gray { background: var(--gray-500); }
+
+.bar-chart-item .bar-value {
+  width: 40px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--gray-700);
+  flex-shrink: 0;
+}
+
+/* --- Donut/Pie chart (CSS-only) --- */
+.donut-chart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.donut-visual {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 25%;
+  background: var(--white);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.donut-center .donut-total {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.donut-center .donut-label {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+}
+
+.donut-legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--gray-700);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* --- Quick Actions --- */
+.quick-actions {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+/* --- Complaint detail - before/after --- */
+.before-after {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.before-after .ba-item {
+  text-align: center;
+}
+
+.before-after .ba-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: var(--space-2);
+}
+
+.before-after img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+}
+
+/* --- Status update form --- */
+.status-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* --- Map markers info window --- */
+.map-popup-content {
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.map-popup-content strong {
+  color: var(--gray-900);
+}
+
+.map-popup-content .popup-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* --- Responsive dashboard --- */
+@media (max-width: 768px) {
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .donut-chart {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .before-after {
+    grid-template-columns: 1fr;
+  }
+
+  .bar-chart-item .bar-label {
+    width: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .quick-actions {
+    flex-direction: column;
+  }
+
+  .officer-actions {
+    flex-direction: column;
+  }
+}
