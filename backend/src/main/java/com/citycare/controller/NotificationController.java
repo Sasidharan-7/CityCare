@@ -1,6 +1,6 @@
 package com.citycare.controller;
 
-import com.citycare.entity.Notification;
+import com.citycare.dto.NotificationResponse;
 import com.citycare.entity.User;
 import com.citycare.exception.UnauthorizedException;
 import com.citycare.repository.UserRepository;
@@ -30,7 +30,7 @@ public class NotificationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Notification>> getUserNotifications(Authentication auth) {
+    public ResponseEntity<List<NotificationResponse>> getUserNotifications(Authentication auth) {
         User user = getAuthenticatedUser(auth);
         return ResponseEntity.ok(notificationService.getUserNotifications(user.getId()));
     }

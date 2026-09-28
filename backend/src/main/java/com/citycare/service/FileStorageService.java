@@ -55,7 +55,7 @@ public class FileStorageService {
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Returns relative resource URL served by WebMvcConfig
-            return "http://localhost:8080/uploads/" + newFilename;
+            return "/uploads/" + newFilename;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file", e);
         }

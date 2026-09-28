@@ -36,6 +36,7 @@ public class AIServiceClient {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             Map<String, String> payload = new HashMap<>();
+            payload.put("category", category != null ? category : "");
             payload.put("description", description != null ? description : "");
             payload.put("imageUrl", imageUrl != null ? imageUrl : "");
 

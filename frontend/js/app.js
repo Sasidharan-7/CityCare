@@ -8,8 +8,8 @@
 const App = (() => {
   // ── Configuration ──────────────────────────────────────
   const CONFIG = {
-    API_BASE: 'http://localhost:8080/api',
-    AI_SERVICE_URL: 'http://localhost:5000',
+    API_BASE: window.location.origin.replace(/\/$/, '') + '/api',
+    AI_SERVICE_URL: window.location.origin.replace(/\/$/, '').replace(/:\d+$/, ':5000'),
     TOKEN_KEY: 'citycare_token',
     USER_KEY: 'citycare_user',
     MAX_FILE_SIZE: 5 * 1024 * 1024, // 5 MB

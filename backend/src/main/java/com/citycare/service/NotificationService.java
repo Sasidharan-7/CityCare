@@ -1,5 +1,6 @@
 package com.citycare.service;
 
+import com.citycare.dto.NotificationResponse;
 import com.citycare.entity.Complaint;
 import com.citycare.entity.Notification;
 import com.citycare.entity.User;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
@@ -24,8 +26,11 @@ public class NotificationService {
         return notificationRepository.save(notification);
     }
 
-    public List<Notification> getUserNotifications(Long userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    @Transactional
+    public List<NotificationResponse> getUserNotifications(Long userId) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -38,5 +43,18 @@ public class NotificationService {
 
     public long getUnreadCount(Long userId) {
         return notificationRepository.countByUserIdAndReadFalse(userId);
+    }
+
+    private NotificationResponse mapToResponse(Notification n) {
+        Long complaintId = n.getComplaint() != null ? n.getComplaint().getId() : null;
+        String complaintRef = n.getComplaint() != null ? n.getComplaint().getComplaintId() : null;
+        return new NotificationResponse(
+                n.getId(),
+                complaintId,
+                complaintRef,
+                n.getMessage(),
+                n.getRead(),
+                n.getCreatedAt()
+        );
     }
 }
